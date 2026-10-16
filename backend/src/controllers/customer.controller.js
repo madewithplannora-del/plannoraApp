@@ -9,7 +9,7 @@ const {
 // create customer account
 async function createCustomer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -102,7 +102,7 @@ async function createCustomer(req, res) {
 // get customer account
 async function getCustomer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -153,7 +153,7 @@ async function getCustomer(req, res) {
 // update customer account
 async function updateCustomer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -264,7 +264,7 @@ async function updateCustomer(req, res) {
 // delete customer account
 async function deleteCustomer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({

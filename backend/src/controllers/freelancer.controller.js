@@ -11,7 +11,7 @@ const {
 // Create freelancer account
 async function createFreelancer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -154,7 +154,7 @@ async function createFreelancer(req, res) {
 // Get freelancer account
 async function getFreelancer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -212,7 +212,7 @@ async function getFreelancer(req, res) {
 // Update freelancer account
 async function updateFreelancer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({
@@ -341,7 +341,7 @@ async function updateFreelancer(req, res) {
 // Delete freelancer account
 async function deleteFreelancer(req, res) {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({

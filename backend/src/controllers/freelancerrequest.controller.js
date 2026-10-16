@@ -35,9 +35,22 @@ function hasId(list, id) {
     return (list || []).some((x) => idString(x) === target);
 }
 
-// Adjust to however your auth middleware stores the logged-in user.
+// Resolve logged-in freelancer from req.user, cookie, or Authorization header
 async function resolveFreelancer(req) {
-    const userId = req.user && (req.user.id || req.user._id || req.user.userId);
+    let userId = req.user && (req.user.id || req.user._id || req.user.userId);
+
+    if (!userId) {
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+        if (token) {
+            try {
+                const jwt = require("jsonwebtoken");
+                const decoded = jwt.verify(token, process.env.JWT_KEY);
+                userId = decoded?.id;
+            } catch (e) {
+                return null;
+            }
+        }
+    }
 
     if (!userId) return null;
 

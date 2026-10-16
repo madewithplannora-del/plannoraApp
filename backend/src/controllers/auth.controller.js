@@ -259,6 +259,7 @@ async function verifyOtp(req, res) {
         return res.status(200).json({
             message:
                 "Account created and email verified successfully",
+            token: accesstoken,
             user: {
                 id:user._id,
                 username:user.username,
@@ -363,6 +364,7 @@ async function loginUser(req, res) {
 
         return res.status(200).json({
             message:"Logged in",
+            token: accesstoken,
             user: {
                 id:userExist._id,
                 username:userExist.username,
@@ -751,8 +753,8 @@ async function logoutUser(req, res) {
 async function getMe(req, res) {
     try {
 
-        // Get access token from cookie
-        const accessToken = req.cookies.accesstoken;
+        // Get access token from cookie or Authorization header (Bearer token)
+        const accessToken = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!accessToken) {
             return res.status(401).json({

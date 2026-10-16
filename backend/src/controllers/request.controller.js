@@ -22,7 +22,7 @@ const {
 // create request
 const createRequest = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
@@ -194,7 +194,7 @@ const createRequest = async (req, res) => {
 // get all requests created by the logged-in customer
 const getRequests = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
@@ -236,7 +236,7 @@ const getRequests = async (req, res) => {
 // get one request owned by the logged-in customer
 const getRequestById = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
@@ -286,7 +286,7 @@ const getRequestById = async (req, res) => {
 // update a request owned by the logged-in customer
 const updateRequest = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
@@ -413,7 +413,7 @@ const updateRequest = async (req, res) => {
 // delete a request owned by the logged-in customer
 const deleteRequest = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
@@ -488,7 +488,7 @@ const deleteRequest = async (req, res) => {
 // Remove a freelancer from accepted list and notify waitlisters
 const removeFreelancerFromAccepted = async (req, res) => {
     try {
-        const token = req.cookies?.accesstoken;
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
 
         if (!token) {
             return res.status(401).json({ message: "Authentication required" });
