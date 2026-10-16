@@ -1,0 +1,9 @@
+$kind: http-request
+name: http://localhost:3001/api/freelancer-request/6ad1f3a1dcc9a6fc287c956f/accept
+description: ""
+url: http://localhost:3001/api/freelancer-request/6ad1f3a1dcc9a6fc287c956f/accept
+method: POST
+body:
+  type: json
+  content: ""
+order: 4503595760281589

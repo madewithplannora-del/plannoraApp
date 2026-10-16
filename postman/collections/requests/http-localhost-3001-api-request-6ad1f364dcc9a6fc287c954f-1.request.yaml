@@ -1,0 +1,13 @@
+$kind: http-request
+name: http://localhost:3001/api/request/6ad1f364dcc9a6fc287c954f
+description: ""
+url: http://localhost:3001/api/request/6ad1f364dcc9a6fc287c954f
+method: PUT
+body:
+  type: json
+  content: "{\r
+
+    \    \"location\": \"Auditorium Hall, South Campus\"\r
+
+    }"
+order: 4499794598222586
