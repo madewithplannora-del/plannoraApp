@@ -69,13 +69,32 @@ async function createCustomer(req, res) {
             });
         }
 
+        let profileData = {
+            url: null,
+            fileId: null
+        };
+
+        if (req.file) {
+            const uploadResult = await uploadCustomerProfilePicture(
+                req.file.buffer,
+                req.file.originalname,
+                account.toString()
+            );
+
+            profileData = {
+                url: uploadResult.url,
+                fileId: uploadResult.fileId
+            };
+        }
+
         const customer = await customerModel.create({
             account,
             phoneno: phoneno.trim(),
             state: state.trim(),
             city: city.trim(),
             pincode: pincode.trim(),
-            sent_request: []
+            sent_request: [],
+            profilePicture: profileData
         });
 
         return res.status(201).json({
@@ -228,6 +247,19 @@ async function updateCustomer(req, res) {
             updates.pincode = pincode.trim();
         }
 
+        if (req.file) {
+            const uploadResult = await uploadCustomerProfilePicture(
+                req.file.buffer,
+                req.file.originalname,
+                account.toString()
+            );
+
+            updates.profilePicture = {
+                url: uploadResult.url,
+                fileId: uploadResult.fileId
+            };
+        }
+
         if (Object.keys(updates).length === 0) {
             return res.status(400).json({
                 message: "No valid fields provided to update"
@@ -314,89 +346,6 @@ async function deleteCustomer(req, res) {
     }
 }
 
-// Upload customer profile picture
-async function uploadProfilePicture(req, res) {
-    try {
-        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
-
-        if (!token) {
-            return res.status(401).json({
-                message: "Access token not found"
-            });
-        }
-
-        let decoded;
-        try {
-            decoded = jwt.verify(token, process.env.JWT_KEY);
-        } catch (error) {
-            return res.status(401).json({
-                message: "Invalid or expired access token"
-            });
-        }
-
-        if (!decoded?.id) {
-            return res.status(401).json({
-                message: "Invalid access token"
-            });
-        }
-
-        const account = decoded.id;
-
-        const customer = await customerModel.findOne({ account });
-        if (!customer) {
-            return res.status(404).json({
-                message: "Customer account not found"
-            });
-        }
-
-        if (!req.file) {
-            return res.status(400).json({
-                message: "Please select an image file to upload"
-            });
-        }
-
-        // Upload to ImageKit folder: /plannora/customers/profile-pictures
-        const uploadResult = await uploadCustomerProfilePicture(
-            req.file.buffer,
-            req.file.originalname,
-            customer._id.toString()
-        );
-
-
-        const profileData = {
-            url: uploadResult.url,
-            fileId: uploadResult.fileId
-        };
-
-        customer.profilePicture = profileData;
-        await customer.save();
-
-        // Keep User profilePicture in sync
-        await authdatabase.findByIdAndUpdate(account, {
-            $set: {
-                profilePicture: {
-                    url: uploadResult.url,
-                    publicId: uploadResult.fileId
-                }
-            }
-        });
-
-        return res.status(200).json({
-            message: "Profile picture uploaded successfully",
-            profilePicture: uploadResult.url,
-            fileId: uploadResult.fileId
-        });
-
-    } catch (error) {
-        return res.status(500).json({
-            message: "Error while uploading profile picture",
-            ...(process.env.NODE_ENV !== "production" && {
-                error: error.message
-            })
-        });
-    }
-}
-
 // Get only customer's profile picture
 async function getProfilePicture(req, res) {
     try {
@@ -463,6 +412,5 @@ module.exports = {
     getCustomer,
     updateCustomer,
     deleteCustomer,
-    uploadProfilePicture,
     getProfilePicture
 };

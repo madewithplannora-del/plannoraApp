@@ -804,7 +804,6 @@ async function getMe(req, res) {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                profilePicture: user.profilePicture,
                 emailVerified: user.emailVerified
             }
         });

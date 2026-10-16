@@ -1,0 +1,6 @@
+$kind: http-request
+name: http://localhost:3001/api/freelancer/delete
+description: ""
+url: http://localhost:3001/api/freelancer/delete
+method: DELETE
+order: 4496536338695081

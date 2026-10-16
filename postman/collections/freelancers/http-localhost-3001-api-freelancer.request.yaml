@@ -1,0 +1,6 @@
+$kind: http-request
+name: http://localhost:3001/api/freelancer
+description: ""
+url: http://localhost:3001/api/freelancer
+method: GET
+order: 435975184520088

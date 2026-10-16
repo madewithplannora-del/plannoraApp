@@ -8,21 +8,17 @@ const {
     validateImageSignature
 } = require("../middlewares/upload.middleware");
 
-// Create freelancer account
-router.post("/create", freelancerController.createFreelancer);
+// Create freelancer account (supports text fields + optional profile image)
+router.post("/create", uploadProfilePictureMiddleware, validateImageSignature, freelancerController.createFreelancer);
 
 // Get freelancer account
 router.get("/", freelancerController.getFreelancer);
 
-// Update freelancer account
-router.put("/update", freelancerController.updateFreelancer);
+// Update freelancer account (supports text fields + optional profile image)
+router.put("/update", uploadProfilePictureMiddleware, validateImageSignature, freelancerController.updateFreelancer);
 
 // Delete freelancer account
 router.delete("/delete", freelancerController.deleteFreelancer);
-
-// Upload freelancer profile picture
-router.post("/upload-profile-picture", uploadProfilePictureMiddleware, validateImageSignature, freelancerController.uploadProfilePicture);
-router.post("/profile-picture", uploadProfilePictureMiddleware, validateImageSignature, freelancerController.uploadProfilePicture);
 
 // Get freelancer profile picture only
 router.get("/profile-picture", freelancerController.getProfilePicture);

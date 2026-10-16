@@ -29,19 +29,6 @@ const userSchema = new mongoose.Schema({
         select: false
     },
 
-    profilePicture: {
-
-        url: {
-            type: String,
-            default: null
-        },
-
-        publicId: {
-            type: String,
-            default: null
-        }
-
-    },
 
     emailVerified: {
         type: Boolean,

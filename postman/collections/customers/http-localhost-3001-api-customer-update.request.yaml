@@ -1,0 +1,15 @@
+$kind: http-request
+name: http://localhost:3001/api/customer/update
+description: ""
+url: http://localhost:3001/api/customer/update
+method: PUT
+body:
+  type: formdata
+  content:
+    - type: file
+      key: profilePicture
+      src:
+        - /C:/Users/Krishnraj Shivolkar/Downloads/vectors, photos and PSD files _ Free download.jpg
+      description: ""
+      disabled: false
+order: 2611157998269593

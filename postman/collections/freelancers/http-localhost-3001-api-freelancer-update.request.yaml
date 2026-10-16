@@ -1,0 +1,15 @@
+$kind: http-request
+name: http://localhost:3001/api/freelancer/update
+description: ""
+url: http://localhost:3001/api/freelancer/update
+method: PUT
+body:
+  type: formdata
+  content:
+    - type: file
+      key: profilePicture
+      src:
+        - /C:/Users/Krishnraj Shivolkar/Downloads/naurxzi_.jpg
+      description: ""
+      disabled: false
+order: 2354997788444583

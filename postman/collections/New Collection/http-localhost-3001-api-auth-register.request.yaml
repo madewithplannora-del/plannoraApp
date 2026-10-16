@@ -1,0 +1,17 @@
+$kind: http-request
+name: http://localhost:3001/api/auth/register
+description: ""
+url: http://localhost:3001/api/auth/register
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"username\": \"krishnraj shivolkar\",\r
+
+    \    \"email\": \"krishnrajshivolkar@gmail.com\",\r
+
+    \    \"password\": \"krishnraj211205\"\r
+
+    }"
+order: 1792140393133

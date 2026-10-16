@@ -1,0 +1,6 @@
+$kind: http-request
+name: http://localhost:3001/api/customer
+description: ""
+url: http://localhost:3001/api/customer
+method: GET
+order: 551190492195011

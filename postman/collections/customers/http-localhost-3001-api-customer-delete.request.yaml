@@ -1,0 +1,6 @@
+$kind: http-request
+name: http://localhost:3001/api/customer/delete
+description: ""
+url: http://localhost:3001/api/customer/delete
+method: DELETE
+order: 4499345292907986

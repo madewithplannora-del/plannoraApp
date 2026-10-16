@@ -1,0 +1,6 @@
+$kind: http-request
+name: http://localhost:3001/api/customer/profile-picture/6ad1f01cdcc9a6fc287c9529
+description: ""
+url: http://localhost:3001/api/customer/profile-picture/6ad1f01cdcc9a6fc287c9529
+method: GET
+order: 4472771171498303

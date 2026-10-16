@@ -1,0 +1,15 @@
+$kind: http-request
+name: http://localhost:3001/api/auth/verifyforgototp
+description: ""
+url: http://localhost:3001/api/auth/verifyforgototp
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \    \"email\": \"krishnrajshivolkar@gmail.com\",\r
+
+    \    \"otp\":\"386500\"\r
+
+    }"
+order: 4359960737342053

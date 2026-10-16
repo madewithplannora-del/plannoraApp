@@ -1,0 +1,687 @@
+{
+  "info": {
+    "_postman_id": "plannora-api-collection",
+    "name": "Plannora API Collection",
+    "description": "Ready-to-use Postman collection for Plannora backend testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3001",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "requestId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "freelancerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "notificationId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/",
+          "host": ["{{baseUrl}}"],
+          "path": [""]
+        }
+      }
+    },
+    {
+      "name": "1. Authentication",
+      "item": [
+        {
+          "name": "1.1 Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser_01\",\n  \"email\": \"testuser01@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "1.2 Verify Registration OTP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.token) {",
+                  "        pm.collectionVariables.set('jwt_token', data.token);",
+                  "        console.log('jwt_token saved to collection variables');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser01@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verifyotp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verifyotp"]
+            }
+          }
+        },
+        {
+          "name": "1.3 Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.token) {",
+                  "        pm.collectionVariables.set('jwt_token', data.token);",
+                  "        console.log('jwt_token saved to collection variables');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser01@example.com\",\n  \"password\": \"Password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "1.4 Forgot Password (Send OTP)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser01@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgotpassword",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgotpassword"]
+            }
+          }
+        },
+        {
+          "name": "1.5 Verify Forgot Password OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"testuser01@example.com\",\n  \"otp\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verifyforgototp",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verifyforgototp"]
+            }
+          }
+        },
+        {
+          "name": "1.6 Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"resetpassword\": \"NewPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/resetpassword",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "resetpassword"]
+            }
+          }
+        },
+        {
+          "name": "1.7 Get Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "1.8 Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Customer",
+      "item": [
+        {
+          "name": "2.1 Create Customer Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "phoneno", "value": "9876543210", "type": "text" },
+                { "key": "state", "value": "Maharashtra", "type": "text" },
+                { "key": "city", "value": "Mumbai", "type": "text" },
+                { "key": "pincode", "value": "400001", "type": "text" },
+                { "key": "image", "type": "file", "src": "", "description": "Optional profile picture" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "create"]
+            }
+          }
+        },
+        {
+          "name": "2.2 Get Customer Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer"]
+            }
+          }
+        },
+        {
+          "name": "2.3 Update Customer Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "phoneno", "value": "9876543299", "type": "text" },
+                { "key": "city", "value": "Pune", "type": "text" },
+                { "key": "state", "value": "Maharashtra", "type": "text" },
+                { "key": "pincode", "value": "411001", "type": "text" },
+                { "key": "image", "type": "file", "src": "", "description": "Optional new profile picture" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "update"]
+            }
+          }
+        },
+        {
+          "name": "2.4 Get Profile Picture",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "profile-picture"]
+            }
+          }
+        },
+        {
+          "name": "2.5 Delete Customer Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/customer/delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "customer", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Freelancer",
+      "item": [
+        {
+          "name": "3.1 Create Freelancer Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "phone", "value": "9123456789", "type": "text" },
+                { "key": "linkedin", "value": "https://linkedin.com/in/freelancer-test", "type": "text" },
+                { "key": "category", "value": "Professional", "type": "text" },
+                { "key": "state", "value": "Maharashtra", "type": "text" },
+                { "key": "city", "value": "Mumbai", "type": "text" },
+                { "key": "pincode", "value": "400001", "type": "text" },
+                { "key": "image", "type": "file", "src": "", "description": "Optional profile picture" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer", "create"]
+            }
+          }
+        },
+        {
+          "name": "3.2 Get Freelancer Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer"]
+            }
+          }
+        },
+        {
+          "name": "3.3 Update Freelancer Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "phone", "value": "9123456799", "type": "text" },
+                { "key": "category", "value": "Cultural", "type": "text" },
+                { "key": "state", "value": "Maharashtra", "type": "text" },
+                { "key": "city", "value": "Pune", "type": "text" },
+                { "key": "pincode", "value": "411001", "type": "text" },
+                { "key": "linkedin", "value": "https://linkedin.com/in/updated", "type": "text" },
+                { "key": "image", "type": "file", "src": "", "description": "Optional new profile picture" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer/update",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer", "update"]
+            }
+          }
+        },
+        {
+          "name": "3.4 Get Freelancer Profile Picture",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer/profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer", "profile-picture"]
+            }
+          }
+        },
+        {
+          "name": "3.5 Delete Freelancer Profile",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer/delete",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer", "delete"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Requests (Customer)",
+      "item": [
+        {
+          "name": "4.1 Create Request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var data = pm.response.json();",
+                  "    if (data.request && data.request._id) {",
+                  "        pm.collectionVariables.set('requestId', data.request._id);",
+                  "        console.log('requestId saved to collection variables: ' + data.request._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"event_details\": \"Corporate Summit 2026\",\n  \"pay\": 3000,\n  \"city\": \"Mumbai\",\n  \"state\": \"Maharashtra\",\n  \"pincode\": \"400001\",\n  \"location\": \"Grand Hyatt Mumbai\",\n  \"category\": \"Professional\",\n  \"time\": \"10:00 AM - 06:00 PM\",\n  \"start_time\": \"2026-11-20T10:00:00.000Z\",\n  \"end_time\": \"2026-11-20T18:00:00.000Z\",\n  \"date\": \"2026-11-20T00:00:00.000Z\",\n  \"no_of_candidates\": 2,\n  \"additional_description\": \"Need registration desk support and guest reception\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/request/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "create"]
+            }
+          }
+        },
+        {
+          "name": "4.2 Get All Customer Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request"]
+            }
+          }
+        },
+        {
+          "name": "4.3 Get Request By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/request/{{requestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "{{requestId}}"]
+            }
+          }
+        },
+        {
+          "name": "4.4 Update Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pay\": 3500,\n  \"no_of_candidates\": 3,\n  \"additional_description\": \"Updated pay to 3500\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/request/{{requestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "{{requestId}}"]
+            }
+          }
+        },
+        {
+          "name": "4.5 Remind Freelancers Attendance",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/request/{{requestId}}/remind-attendance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "{{requestId}}", "remind-attendance"]
+            }
+          }
+        },
+        {
+          "name": "4.6 Remove Freelancer From Accepted List",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/request/{{requestId}}/freelancer/{{freelancerId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "{{requestId}}", "freelancer", "{{freelancerId}}"]
+            }
+          }
+        },
+        {
+          "name": "4.7 Delete Request",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/request/{{requestId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "request", "{{requestId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Freelancer Request Actions",
+      "item": [
+        {
+          "name": "5.1 Accept Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer-request/{{requestId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer-request", "{{requestId}}", "accept"]
+            }
+          }
+        },
+        {
+          "name": "5.2 Reject Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer-request/{{requestId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer-request", "{{requestId}}", "reject"]
+            }
+          }
+        },
+        {
+          "name": "5.3 Submit Attendance Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer-request/{{requestId}}/attendance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer-request", "{{requestId}}", "attendance"]
+            }
+          }
+        },
+        {
+          "name": "5.4 Submit Redflag Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/freelancer-request/{{requestId}}/redflag",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "freelancer-request", "{{requestId}}", "redflag"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Notifications",
+      "item": [
+        {
+          "name": "6.1 Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications?unreadOnly=false&limit=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications"],
+              "query": [
+                { "key": "unreadOnly", "value": "false" },
+                { "key": "limit", "value": "30" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "6.2 Register Device Push Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pushToken\": \"ExponentPushToken[AbCdEf1234567890]\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/register-device",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "register-device"]
+            }
+          }
+        },
+        {
+          "name": "6.3 Mark Single Notification As Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/{{notificationId}}/read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "{{notificationId}}", "read"]
+            }
+          }
+        },
+        {
+          "name": "6.4 Mark All Notifications As Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/notifications/read-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "notifications", "read-all"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

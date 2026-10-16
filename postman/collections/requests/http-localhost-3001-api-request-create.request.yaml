@@ -1,0 +1,37 @@
+$kind: http-request
+name: http://localhost:3001/api/request/create
+description: ""
+url: http://localhost:3001/api/request/create
+method: POST
+body:
+  type: json
+  content: "{\r
+
+    \  \"event_details\": \"Need photographers and videographers for annual cultural fest\",\r
+
+    \  \"pay\": 3500,\r
+
+    \  \"city\": \"Mumbai\",\r
+
+    \  \"pincode\": \"400001\",\r
+
+    \  \"state\": \"Maharashtra\",\r
+
+    \  \"location\": \"Auditorium Hall, North Campus\",\r
+
+    \  \"category\": \"Professional\",\r
+
+    \  \"time\": \"10:00 AM - 05:00 PM\",\r
+
+    \  \"start_time\": \"2026-10-25T04:30:00.000Z\",\r
+
+    \  \"end_time\": \"2026-10-25T11:30:00.000Z\",\r
+
+    \  \"no_of_candidates\": 10,\r
+
+    \  \"date\": \"2026-10-25T00:00:00.000Z\",\r
+
+    \  \"additional_description\": \"Must bring their own DSLR and lenses\"\r
+
+    }"
+order: 1792144315890

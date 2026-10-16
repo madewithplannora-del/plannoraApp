@@ -1,0 +1,9 @@
+$kind: http-request
+name: http://localhost:3001/api/auth/logout
+description: ""
+url: http://localhost:3001/api/auth/logout
+method: POST
+body:
+  type: json
+  content: ""
+order: 4479693021899468

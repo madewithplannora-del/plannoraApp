@@ -1,0 +1,45 @@
+$kind: http-request
+name: http://localhost:3001/api/freelancer/create
+description: ""
+url: http://localhost:3001/api/freelancer/create
+method: POST
+body:
+  type: formdata
+  content:
+    - type: text
+      key: phone
+      value: "9876543210"
+      description: ""
+      disabled: false
+    - type: text
+      key: linkedin
+      value: https://linkedin.com/in/yourprofile
+      description: ""
+      disabled: false
+    - type: text
+      key: category
+      value: Professional
+      description: ""
+      disabled: false
+    - type: text
+      key: state
+      value: Goa
+      description: ""
+      disabled: false
+    - type: text
+      key: city
+      value: Panaji
+      description: ""
+      disabled: false
+    - type: text
+      key: pincode
+      value: "403001"
+      description: ""
+      disabled: false
+    - type: file
+      key: profilePicture
+      src:
+        - /C:/Users/Krishnraj Shivolkar/Downloads/vectors, photos and PSD files _ Free download.jpg
+      description: ""
+      disabled: false
+order: 1792143961175
