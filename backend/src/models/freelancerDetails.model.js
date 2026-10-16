@@ -29,6 +29,17 @@ const freelancerDetailsSchema = new mongoose.Schema(
             type: String,
             trim: true,
         },
+
+        profilePicture: {
+            url: {
+                type: String,
+                default: null,
+            },
+            fileId: {
+                type: String,
+                default: null,
+            },
+        },
     },
     {
         timestamps: true,

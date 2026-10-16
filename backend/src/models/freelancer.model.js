@@ -37,6 +37,22 @@ const freelancerSchema = new mongoose.Schema(
         "Private"
       ],
     },
+
+    profilePicture: {
+      url: {
+        type: String,
+        default: null,
+      },
+      fileId: {
+        type: String,
+        default: null,
+      },
+    },
+
+    pushToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

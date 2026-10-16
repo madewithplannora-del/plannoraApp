@@ -2,6 +2,9 @@ const jwt = require("jsonwebtoken");
 
 const authdatabase = require("../models/auth.model");
 const customerModel = require("../models/customer.model");
+const {
+    uploadCustomerProfilePicture
+} = require("../storage/imagekit.service");
 
 // create customer account
 async function createCustomer(req, res) {
@@ -311,9 +314,155 @@ async function deleteCustomer(req, res) {
     }
 }
 
+// Upload customer profile picture
+async function uploadProfilePicture(req, res) {
+    try {
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+
+        if (!token) {
+            return res.status(401).json({
+                message: "Access token not found"
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_KEY);
+        } catch (error) {
+            return res.status(401).json({
+                message: "Invalid or expired access token"
+            });
+        }
+
+        if (!decoded?.id) {
+            return res.status(401).json({
+                message: "Invalid access token"
+            });
+        }
+
+        const account = decoded.id;
+
+        const customer = await customerModel.findOne({ account });
+        if (!customer) {
+            return res.status(404).json({
+                message: "Customer account not found"
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Please select an image file to upload"
+            });
+        }
+
+        // Upload to ImageKit folder: /plannora/customers/profile-pictures
+        const uploadResult = await uploadCustomerProfilePicture(
+            req.file.buffer,
+            req.file.originalname,
+            customer._id.toString()
+        );
+
+
+        const profileData = {
+            url: uploadResult.url,
+            fileId: uploadResult.fileId
+        };
+
+        customer.profilePicture = profileData;
+        await customer.save();
+
+        // Keep User profilePicture in sync
+        await authdatabase.findByIdAndUpdate(account, {
+            $set: {
+                profilePicture: {
+                    url: uploadResult.url,
+                    publicId: uploadResult.fileId
+                }
+            }
+        });
+
+        return res.status(200).json({
+            message: "Profile picture uploaded successfully",
+            profilePicture: uploadResult.url,
+            fileId: uploadResult.fileId
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error while uploading profile picture",
+            ...(process.env.NODE_ENV !== "production" && {
+                error: error.message
+            })
+        });
+    }
+}
+
+// Get only customer's profile picture
+async function getProfilePicture(req, res) {
+    try {
+        const targetId = req.params.id || req.query.customerId || req.query.id;
+        let customer;
+
+        if (targetId) {
+            customer = await customerModel.findOne({
+                $or: [
+                    { _id: targetId.match(/^[0-9a-fA-F]{24}$/) ? targetId : null },
+                    { account: targetId.match(/^[0-9a-fA-F]{24}$/) ? targetId : null }
+                ].filter(Boolean)
+            }).select("profilePicture");
+        } else {
+            const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+
+            if (!token) {
+                return res.status(401).json({
+                    message: "Access token not found"
+                });
+            }
+
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_KEY);
+            } catch (error) {
+                return res.status(401).json({
+                    message: "Invalid or expired access token"
+                });
+            }
+
+            if (!decoded?.id) {
+                return res.status(401).json({
+                    message: "Invalid access token"
+                });
+            }
+
+            customer = await customerModel.findOne({ account: decoded.id }).select("profilePicture");
+        }
+
+        if (!customer) {
+            return res.status(404).json({
+                message: "Customer account not found"
+            });
+        }
+
+        // Return only the profile picture
+        return res.status(200).json({
+            profilePicture: customer.profilePicture?.url || null
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error while fetching profile picture",
+            ...(process.env.NODE_ENV !== "production" && {
+                error: error.message
+            })
+        });
+    }
+}
+
 module.exports = {
     createCustomer,
     getCustomer,
     updateCustomer,
-    deleteCustomer
+    deleteCustomer,
+    uploadProfilePicture,
+    getProfilePicture
 };

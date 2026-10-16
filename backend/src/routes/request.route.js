@@ -22,4 +22,8 @@ router.delete("/:id", requestController.deleteRequest);
 // Remove a freelancer from accepted list (customer action)
 router.delete("/:requestId/freelancer/:freelancerId", requestController.removeFreelancerFromAccepted);
 
+// Remind accepted freelancers who have not entered attendance code (Email + In-App Notification)
+router.post("/:requestId/remind-attendance", requestController.remindAttendance);
+
 module.exports = router;
+

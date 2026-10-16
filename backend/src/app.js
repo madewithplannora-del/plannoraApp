@@ -6,6 +6,7 @@ const freelancerroute = require("./routes/freelancer.route");
 const customerroute = require("./routes/customer.route");
 const requestroute = require("./routes/request.route");
 const freelancerRequestRoute = require("./routes/freelancerrequest.route");
+const notificationRoute = require("./routes/notification.route");
 
 require("dotenv").config();
 
@@ -22,13 +23,14 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 
 // Routes
-app.use("/",(req,res)=>{
-    message:"running"
+app.get("/", (req, res) => {
+    res.json({ message: "running" });
 });
 app.use("/api/auth", authroute);
 app.use("/api/freelancer", freelancerroute);
 app.use("/api/customer", customerroute);
 app.use("/api/request", requestroute);
 app.use("/api/freelancer-request", freelancerRequestRoute);
+app.use("/api/notifications", notificationRoute);
 
 module.exports = app;

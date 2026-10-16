@@ -9,14 +9,18 @@ const imagekit = new ImageKit({
 });
 
 /**
- * Upload single file with optimization for minimal storage
- * Uses WebP format and automatic quality optimization
+ * Upload freelancer profile picture to /plannora/freelancers/profile-pictures
  */
-async function uploadFile(buffer, fileName, folder = "/plannora") {
+async function uploadFreelancerProfilePicture(buffer, fileName, freelancerId = "") {
+    const cleanFileName = freelancerId
+        ? `freelancer_${freelancerId}_${Date.now()}_${fileName}`
+        : `freelancer_${Date.now()}_${fileName}`;
+
     const result = await imagekit.upload({
         file: buffer.toString("base64"),
-        fileName: fileName,
-        folder: folder,
+        fileName: cleanFileName,
+        folder: "/plannora/freelancers/profile-pictures",
+        useUniqueFileName: true,
         isPrivateFile: false
     });
 
@@ -24,48 +28,25 @@ async function uploadFile(buffer, fileName, folder = "/plannora") {
 }
 
 /**
- * Upload vendor profile picture with optimized transformations
- * Designed specifically for profile pictures with minimal storage footprint
+ * Upload customer profile picture to /plannora/customers/profile-pictures
  */
-async function uploadVendorProfilePicture(buffer, vendorID, fileName) {
+async function uploadCustomerProfilePicture(buffer, fileName, customerId = "") {
+    const cleanFileName = customerId
+        ? `customer_${customerId}_${Date.now()}_${fileName}`
+        : `customer_${Date.now()}_${fileName}`;
+
     const result = await imagekit.upload({
         file: buffer.toString("base64"),
-        fileName: fileName,
-        folder: "/plannora/vendor-profiles",
+        fileName: cleanFileName,
+        folder: "/plannora/customers/profile-pictures",
         useUniqueFileName: true,
         isPrivateFile: false
     });
 
-    // Add transformation query params to URL for optimization
-    const transformedUrl = result.url + "?tr=w-400,h-400,c-thumb,g-face,fo-auto,q-auto,f-webp";
-
-    return {
-        ...result,
-        url: transformedUrl
-    };
-}
-
-/**
- * Upload multiple files with optimization
- */
-async function uploadMultipleFiles(files, folder = "/plannora") {
-    const uploadedImages = [];
-
-    for (const file of files) {
-        const result = await uploadFile(
-            file.buffer,
-            `${Date.now()}-${file.originalname}`,
-            folder
-        );
-
-        uploadedImages.push(result.url);
-    }
-
-    return uploadedImages;
+    return result;
 }
 
 module.exports = {
-    uploadFile,
-    uploadMultipleFiles,
-    uploadVendorProfilePicture
+    uploadFreelancerProfilePicture,
+    uploadCustomerProfilePicture
 };

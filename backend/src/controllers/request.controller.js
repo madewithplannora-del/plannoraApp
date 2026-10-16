@@ -7,6 +7,10 @@ const customerModel = require("../models/customer.model");
 const requestProgressModel = require("../models/requestProgress.model");
 const freelancerProgressModel = require("../models/freelancerProgress.model");
 const waitlistModel = require("../models/waitlist.model");
+const {
+    notifyWaitlistSlotAvailable,
+    notifyAllPendingAttendance
+} = require("../services/notification.service");
 const { matchFreelancersForRequest, sendBatchToFreelancers } = require("../utils/matchFreelancers");
 const {
     canCustomerModifyList,
@@ -631,21 +635,43 @@ const notifyWaitlistedFreelancers = async (requestId) => {
             }
         );
 
-        // TODO: Send notification to freelancer
-        // This could be:
-        // - Push notification
-        // - Email
-        // - In-app notification
-        // - SMS
-        console.log(`[Notification] Waitlisted freelancer ${waitlisted.freelancerId} notified about available slot for request ${requestId}`);
+        // Send in-app phone notification to waitlisted freelancer (No email)
+        await notifyWaitlistSlotAvailable(requestId, waitlisted.freelancerId);
 
         return {
             success: true,
             notifiedFreelancerId: waitlisted.freelancerId,
-            message: "Waitlisted freelancer notified"
+            message: "Waitlisted freelancer notified via in-app notification"
         };
     } catch (error) {
         console.error("Error notifying waitlist:", error);
+    }
+};
+
+// Remind accepted freelancers who have not entered attendance code yet
+// (Sends BOTH Email + In-App Phone Notification)
+const remindAttendance = async (req, res) => {
+    try {
+        const { requestId } = req.params;
+
+        if (!mongoose.isValidObjectId(requestId)) {
+            return res.status(400).json({ message: "Invalid request id" });
+        }
+
+        const request = await requestModel.findById(requestId);
+        if (!request) {
+            return res.status(404).json({ message: "Request not found" });
+        }
+
+        const result = await notifyAllPendingAttendance(requestId);
+
+        return res.status(200).json({
+            message: result.message,
+            notifiedCount: result.count
+        });
+    } catch (error) {
+        console.error("Error sending attendance reminders:", error);
+        return res.status(500).json({ message: "Error sending attendance reminders" });
     }
 };
 
@@ -656,5 +682,7 @@ module.exports = {
     updateRequest,
     deleteRequest,
     removeFreelancerFromAccepted,
-    notifyWaitlistedFreelancers
+    notifyWaitlistedFreelancers,
+    remindAttendance
 };
+

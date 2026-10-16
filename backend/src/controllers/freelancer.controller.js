@@ -4,6 +4,9 @@ const authdatabase = require("../models/auth.model");
 const freelancerModel = require("../models/freelancer.model");
 const freelancerDetailModel = require("../models/freelancerDetails.model");
 const freelancerProgressModel = require("../models/freelancerProgress.model");
+const {
+    uploadFreelancerProfilePicture
+} = require("../storage/imagekit.service");
 
 // Create freelancer account
 async function createFreelancer(req, res) {
@@ -392,9 +395,162 @@ async function deleteFreelancer(req, res) {
     }
 }
 
+// Upload freelancer profile picture
+async function uploadProfilePicture(req, res) {
+    try {
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+
+        if (!token) {
+            return res.status(401).json({
+                message: "Access token not found"
+            });
+        }
+
+        let decoded;
+        try {
+            decoded = jwt.verify(token, process.env.JWT_KEY);
+        } catch (error) {
+            return res.status(401).json({
+                message: "Invalid or expired access token"
+            });
+        }
+
+        if (!decoded?.id) {
+            return res.status(401).json({
+                message: "Invalid access token"
+            });
+        }
+
+        const userId = decoded.id;
+
+        const freelancer = await freelancerModel.findOne({ userId });
+        if (!freelancer) {
+            return res.status(404).json({
+                message: "Freelancer account not found"
+            });
+        }
+
+        if (!req.file) {
+            return res.status(400).json({
+                message: "Please select an image file to upload"
+            });
+        }
+
+        // Upload to ImageKit folder: /plannora/freelancers/profile-pictures
+        const uploadResult = await uploadFreelancerProfilePicture(
+            req.file.buffer,
+            req.file.originalname,
+            freelancer._id.toString()
+        );
+
+
+        const profileData = {
+            url: uploadResult.url,
+            fileId: uploadResult.fileId
+        };
+
+        // Update freelancer model
+        freelancer.profilePicture = profileData;
+        await freelancer.save();
+
+        // Keep freelancerDetailModel and User profilePicture in sync
+        await Promise.all([
+            freelancerDetailModel.updateOne(
+                { freelancerId: freelancer._id },
+                { $set: { profilePicture: profileData } }
+            ),
+            authdatabase.findByIdAndUpdate(userId, {
+                $set: {
+                    profilePicture: {
+                        url: uploadResult.url,
+                        publicId: uploadResult.fileId
+                    }
+                }
+            })
+        ]);
+
+        return res.status(200).json({
+            message: "Profile picture uploaded successfully",
+            profilePicture: uploadResult.url,
+            fileId: uploadResult.fileId
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error while uploading profile picture",
+            ...(process.env.NODE_ENV !== "production" && {
+                error: error.message
+            })
+        });
+    }
+}
+
+// Get only the freelancer's profile picture
+async function getProfilePicture(req, res) {
+    try {
+        const targetId = req.params.id || req.query.freelancerId || req.query.id;
+        let freelancer;
+
+        if (targetId) {
+            freelancer = await freelancerModel.findOne({
+                $or: [
+                    { _id: targetId.match(/^[0-9a-fA-F]{24}$/) ? targetId : null },
+                    { userId: targetId.match(/^[0-9a-fA-F]{24}$/) ? targetId : null }
+                ].filter(Boolean)
+            }).select("profilePicture");
+        } else {
+            const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+
+            if (!token) {
+                return res.status(401).json({
+                    message: "Access token not found"
+                });
+            }
+
+            let decoded;
+            try {
+                decoded = jwt.verify(token, process.env.JWT_KEY);
+            } catch (error) {
+                return res.status(401).json({
+                    message: "Invalid or expired access token"
+                });
+            }
+
+            if (!decoded?.id) {
+                return res.status(401).json({
+                    message: "Invalid access token"
+                });
+            }
+
+            freelancer = await freelancerModel.findOne({ userId: decoded.id }).select("profilePicture");
+        }
+
+        if (!freelancer) {
+            return res.status(404).json({
+                message: "Freelancer account not found"
+            });
+        }
+
+        // Return only the profile picture
+        return res.status(200).json({
+            profilePicture: freelancer.profilePicture?.url || null
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            message: "Error while fetching profile picture",
+            ...(process.env.NODE_ENV !== "production" && {
+                error: error.message
+            })
+        });
+    }
+}
+
 module.exports = {
     createFreelancer,
     getFreelancer,
     updateFreelancer,
-    deleteFreelancer
+    deleteFreelancer,
+    uploadProfilePicture,
+    getProfilePicture
 };

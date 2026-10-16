@@ -46,8 +46,12 @@ const userSchema = new mongoose.Schema({
     emailVerified: {
         type: Boolean,
         default: false
-    }
+    },
 
+    pushToken: {
+        type: String,
+        default: null
+    }
 }, {
     timestamps: true
 });

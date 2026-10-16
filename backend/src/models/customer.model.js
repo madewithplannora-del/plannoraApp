@@ -34,7 +34,18 @@ const customerSchema = new mongoose.Schema(
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "requests"
             }
-        ]
+        ],
+
+        profilePicture: {
+            url: {
+                type: String,
+                default: null
+            },
+            fileId: {
+                type: String,
+                default: null
+            }
+        }
     },
     {
         timestamps: true
