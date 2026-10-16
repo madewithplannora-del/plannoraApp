@@ -28,7 +28,7 @@ async function startAll() {
             process.exit(1);
         }
 
-        console.log("Database connected successfully");
+        console.log("Connected to DATABASE");
 
         // Start workers
         await startWorkers();
@@ -37,7 +37,7 @@ async function startAll() {
         const port = Number(process.env.PORT) || 3001;
 
         app.listen(port, () => {
-            console.log(`Server running on port ${port}`);
+            console.log(`Server running on http://localhost:${port}`);
         });
     } catch (error) {
         console.error("Failed to start server:", error);
