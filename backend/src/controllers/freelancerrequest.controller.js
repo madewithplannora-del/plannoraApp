@@ -57,9 +57,21 @@ async function resolveFreelancer(req) {
     return freelancerModel.findOne({ userId }).select("_id").lean();
 }
 
-function codesMatch(a, b) {
-    const x = Buffer.from(String(a));
-    const y = Buffer.from(String(b));
+/*
+    Compare a submitted code against the SHA-256 hash stored on the request.
+    createRequest stores the hash of the code it showed the customer, so the
+    same hashing is applied to the freelancer's input before comparing.
+*/
+function codesMatch(a, storedHash) {
+    if (!storedHash) return false;
+
+    const submittedHash = crypto
+        .createHash("sha256")
+        .update(String(a))
+        .digest("hex");
+
+    const x = Buffer.from(submittedHash);
+    const y = Buffer.from(String(storedHash));
 
     return x.length === y.length && crypto.timingSafeEqual(x, y);
 }
@@ -276,11 +288,11 @@ async function submitAttendance(req, res) {
 
         const request = await requestModel
             .findById(requestId)
-            .select("+attendance_code start_time date end_time")
+            .select("+completion_code_hash start_time date end_time")
             .lean();
 
         if (!request) return fail(res, 404, "Request not found");
-        if (!request.attendance_code) return fail(res, 409, "No attendance code is set for this event");
+        if (!request.completion_code_hash) return fail(res, 409, "No attendance code is set for this event");
 
         const freelancerId = freelancer._id;
 
@@ -301,7 +313,7 @@ async function submitAttendance(req, res) {
             return fail(res, 403, "Attendance window is closed, this event has ended");
         }
 
-        if (!codesMatch(code, request.attendance_code)) {
+        if (!codesMatch(code, request.completion_code_hash)) {
             return fail(res, 400, "Invalid attendance code");
         }
 
@@ -343,11 +355,11 @@ async function submitRedflag(req, res) {
 
         const request = await requestModel
             .findById(requestId)
-            .select("+attendance_code start_time date end_time")
+            .select("+completion_code_hash start_time date end_time")
             .lean();
 
         if (!request) return fail(res, 404, "Request not found");
-        if (!request.attendance_code) return fail(res, 409, "No attendance code is set for this event");
+        if (!request.completion_code_hash) return fail(res, 409, "No attendance code is set for this event");
 
         const freelancerId = freelancer._id;
 
@@ -368,7 +380,7 @@ async function submitRedflag(req, res) {
             return fail(res, 403, "Redflag window is closed, this event has ended");
         }
 
-        if (!codesMatch(code, request.attendance_code)) {
+        if (!codesMatch(code, request.completion_code_hash)) {
             return fail(res, 400, "Invalid attendance code");
         }
 

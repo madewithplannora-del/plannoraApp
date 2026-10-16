@@ -9,7 +9,7 @@ const imagekit = new ImageKit({
 });
 
 /**
- * Upload freelancer profile picture to /plannora/freelancers/profile-pictures
+ * Upload freelancer profile picture to /plannoraApp/freelancers/profile-pictures
  */
 async function uploadFreelancerProfilePicture(buffer, fileName, freelancerId = "") {
     const cleanFileName = freelancerId
@@ -19,7 +19,7 @@ async function uploadFreelancerProfilePicture(buffer, fileName, freelancerId = "
     const result = await imagekit.upload({
         file: buffer.toString("base64"),
         fileName: cleanFileName,
-        folder: "/plannora/freelancers/profile-pictures",
+        folder: "/plannoraApp/freelancers/profile-pictures",
         useUniqueFileName: true,
         isPrivateFile: false
     });
@@ -28,7 +28,7 @@ async function uploadFreelancerProfilePicture(buffer, fileName, freelancerId = "
 }
 
 /**
- * Upload customer profile picture to /plannora/customers/profile-pictures
+ * Upload customer profile picture to /plannoraApp/customers/profile-pictures
  */
 async function uploadCustomerProfilePicture(buffer, fileName, customerId = "") {
     const cleanFileName = customerId
@@ -38,7 +38,7 @@ async function uploadCustomerProfilePicture(buffer, fileName, customerId = "") {
     const result = await imagekit.upload({
         file: buffer.toString("base64"),
         fileName: cleanFileName,
-        folder: "/plannora/customers/profile-pictures",
+        folder: "/plannoraApp/customers/profile-pictures",
         useUniqueFileName: true,
         isPrivateFile: false
     });

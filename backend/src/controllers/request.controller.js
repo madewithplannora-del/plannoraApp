@@ -11,7 +11,7 @@ const {
     notifyWaitlistSlotAvailable,
     notifyAllPendingAttendance
 } = require("../services/notification.service");
-const { matchFreelancersForRequest, sendBatchToFreelancers } = require("../utils/matchFreelancers");
+const { sendRequestToAllFreelancers } = require("../utils/matchFreelancers");
 const {
     canCustomerModifyList,
     getListLockMessage,
@@ -146,17 +146,11 @@ const createRequest = async (req, res) => {
             rejected: []
         });
 
-        // Run freelancer matching in background (don't wait for it to complete response)
-        matchFreelancersForRequest(request, Number(no_of_candidates))
-            .then(async (candidateQueue) => {
-                if (candidateQueue.length > 0) {
-                    // Create request progress and send first batch
-                    const batchSize = Number(no_of_candidates);
-                    const result = await sendBatchToFreelancers(request._id, candidateQueue, batchSize);
-                    console.log(`[createRequest] Batch sent for request ${request._id}: ${result.sent.length} freelancers contacted`);
-                } else {
-                    console.log(`[createRequest] No eligible freelancers found for request ${request._id}`);
-                }
+        // Fan out to ALL eligible freelancers in the background (idempotent:
+        // already sent / accepted / rejected freelancers are skipped by the util).
+        sendRequestToAllFreelancers(request._id)
+            .then((result) => {
+                console.log(`[createRequest] Sent request ${request._id} to ${result.sent.length} eligible freelancers`);
             })
             .catch((error) => {
                 console.error("Background matching error for request", request._id, error);
@@ -394,6 +388,30 @@ const updateRequest = async (req, res) => {
             return res.status(400).json({ message: "End time must be after start time" });
         }
 
+        // Slots can never be reduced below the number of freelancers who already accepted
+        if (updates.no_of_candidates !== undefined) {
+            const progress = await requestProgressModel.findOne({ requestId: existingRequest._id }).lean();
+            const acceptedCount = (progress?.accepted || []).length;
+
+            if (updates.no_of_candidates < acceptedCount) {
+                return res.status(409).json({
+                    message: `Cannot reduce slots below the current accepted count (${acceptedCount})`
+                });
+            }
+        }
+
+        // Event-timing changes follow the same accepted-list lock as freelancer removals
+        const changesEventTiming =
+            updates.start_time !== undefined ||
+            updates.end_time !== undefined ||
+            updates.date !== undefined;
+
+        if (changesEventTiming && !canCustomerModifyList(existingRequest)) {
+            return res.status(403).json({
+                message: `${getListLockMessage(existingRequest)}. Event timing cannot be changed after the lock.`
+            });
+        }
+
         const request = await requestModel.findOneAndUpdate(
             { _id: req.params.id, customer: customer._id },
             { $set: updates },
@@ -441,12 +459,29 @@ const deleteRequest = async (req, res) => {
             return res.status(400).json({ message: "Invalid request ID" });
         }
 
-        const request = await requestModel.findOneAndDelete({
+        const request = await requestModel.findOne({
             _id: req.params.id,
             customer: customer._id
         });
 
         if (!request) {
+            return res.status(404).json({ message: "Request not found" });
+        }
+
+        // Never orphan accepted freelancers by deleting an in-progress request
+        const acceptedProgress = await requestProgressModel.findOne({ requestId: request._id }).lean();
+        if ((acceptedProgress?.accepted || []).length > 0) {
+            return res.status(409).json({
+                message: "Cannot delete a request with accepted freelancers — remove them from the accepted list first"
+            });
+        }
+
+        const deleted = await requestModel.findOneAndDelete({
+            _id: req.params.id,
+            customer: customer._id
+        });
+
+        if (!deleted) {
             return res.status(404).json({ message: "Request not found" });
         }
 
@@ -542,9 +577,11 @@ const removeFreelancerFromAccepted = async (req, res) => {
             });
         }
 
-        // Remove from requestProgress accepted array
+        // Remove from requestProgress accepted array.
+        // Requiring membership in the filter makes "was not accepted" detectable:
+        // $pull alone "succeeds" even when nothing was removed.
         const updated = await requestProgressModel.findOneAndUpdate(
-            { requestId },
+            { requestId, accepted: freelancerId },
             { $pull: { accepted: freelancerId } },
             { new: true }
         );
@@ -650,15 +687,44 @@ const notifyWaitlistedFreelancers = async (requestId) => {
 
 // Remind accepted freelancers who have not entered attendance code yet
 // (Sends BOTH Email + In-App Phone Notification)
+// Owner-only: authenticated customer reminding on THEIR OWN request.
 const remindAttendance = async (req, res) => {
     try {
+        const token = req.cookies?.accesstoken || (req.headers.authorization && req.headers.authorization.startsWith("Bearer ") ? req.headers.authorization.split(" ")[1] : null);
+
+        if (!token) {
+            return res.status(401).json({ message: "Authentication required" });
+        }
+
+        let decoded;
+
+        try {
+            decoded = jwt.verify(token, process.env.JWT_KEY);
+        } catch (error) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        if (!decoded.id || !mongoose.isValidObjectId(decoded.id)) {
+            return res.status(401).json({ message: "Invalid token payload" });
+        }
+
+        const customer = await customerModel.findOne({ account: decoded.id });
+
+        if (!customer) {
+            return res.status(403).json({ message: "Customer profile not found" });
+        }
+
         const { requestId } = req.params;
 
         if (!mongoose.isValidObjectId(requestId)) {
             return res.status(400).json({ message: "Invalid request id" });
         }
 
-        const request = await requestModel.findById(requestId);
+        const request = await requestModel.findOne({
+            _id: requestId,
+            customer: customer._id
+        });
+
         if (!request) {
             return res.status(404).json({ message: "Request not found" });
         }

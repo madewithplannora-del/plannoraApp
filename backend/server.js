@@ -5,6 +5,7 @@ dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 const app = require("./src/app");
 const ConnectDB = require("./src/db/db");
+const { startExpiryWorker } = require("./src/workers/request.expiry.worker");
 
 // Load environment variables
 require("dotenv").config();
@@ -46,7 +47,7 @@ async function startAll() {
 }
 
 async function startWorkers() {
-    // No workers configured at this time
+    startExpiryWorker();
 }
 
 startAll();
