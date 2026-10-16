@@ -241,7 +241,7 @@ async function verifyOtp(req, res) {
                 username:user.username,
                 id:user._id
             },process.env.JWT_KEY,{
-                expiresIn: "15m"
+                expiresIn: "7d"
             }
         );
 
@@ -252,7 +252,7 @@ async function verifyOtp(req, res) {
                 ...cookieBaseOptions,
                 path: "/",
                 maxAge:
-                    15 * 60 * 1000
+                    7 * 24 * 60 * 60 * 1000
             }
         );
 
@@ -349,7 +349,7 @@ async function loginUser(req, res) {
                 username:userExist.username,
                 id:userExist._id
             },process.env.JWT_KEY,{
-                expiresIn: "15m"
+                expiresIn: "7d"
             }
         );
 
@@ -358,7 +358,7 @@ async function loginUser(req, res) {
                 ...cookieBaseOptions,
                 path: "/",
                 maxAge:
-                    15 * 60 * 1000
+                    7 * 24 * 60 * 60 * 1000
             }
         );
 
@@ -598,7 +598,10 @@ async function verifyForgotOtp(req, res) {
 
         return res.status(200).json({
             message:
-                "OTP verified successfully"
+                "OTP verified successfully",
+            // Returned so Bearer-based clients (mobile app) can complete the
+            // reset without relying on the httpOnly cookie.
+            resetToken
         });
 
     } catch (error) {
@@ -634,8 +637,21 @@ async function resetPassword(req, res) {
             });
         }
 
+        /*
+            Reset token can arrive as:
+            1. resettoken cookie (browser/custom clients) — original flow, unchanged
+            2. Authorization: Bearer <resettoken> header (mobile/API clients)
+            3. body.resetToken (explicit fallback)
+        */
+        const bearerToken =
+            req.headers.authorization && req.headers.authorization.startsWith("Bearer ")
+                ? req.headers.authorization.split(" ")[1]
+                : null;
+
         const resetToken =
-            req.cookies.resettoken;
+            req.cookies.resettoken ||
+            bearerToken ||
+            req.body.resetToken;
 
         if (!resetToken) {
             return res.status(401).json({

@@ -23,8 +23,8 @@ app.use(express.urlencoded({
 app.use(cookieParser());
 
 // Routes
-app.get("/", (req, res) => {
-    res.json({ message: "running" });
+app.get("/health", (req, res) => {
+    res.json({ message: "running 120 code" });
 });
 app.use("/api/auth", authroute);
 app.use("/api/freelancer", freelancerroute);
