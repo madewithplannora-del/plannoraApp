@@ -1,14 +1,42 @@
 class ApiConfig {
   ApiConfig._();
 
+  /// Set to true to use local backend (http://10.0.2.2:3001 for Android, http://localhost:3001 for web)
+  /// Set to false to use production URL (https://plannoraapp-1.onrender.com)
+  static const bool useLocalBackend = true;
+
   /// Primary deployed backend URL on Render (no trailing slash)
-  static const String baseUrl = 'https://plannoraapp-1.onrender.com';
+  static const String productionBaseUrl = 'https://plannoraapp-1.onrender.com';
+  
+  /// Local backend URL for web (no trailing slash)
+  static const String webLocalBaseUrl = 'http://localhost:3001';
+  
+  /// Local backend URL for Android (no trailing slash)
+  /// Note: 10.0.2.2 is special alias for host machine on Android emulator
+  static const String androidLocalBaseUrl = 'http://10.0.2.2:3001';
+  
+  /// Local backend URL for iOS (no trailing slash)
+  static const String iosLocalBaseUrl = 'http://localhost:3001';
+
+  /// Active base URL based on configuration
+  static String get baseUrl {
+    if (!useLocalBackend) {
+      return productionBaseUrl;
+    }
+    
+    // For local development, detect platform
+    // Import: import 'dart:io' show Platform;
+    // if (Platform.isAndroid) return androidLocalBaseUrl;
+    // if (Platform.isIOS) return iosLocalBaseUrl;
+    // Default to web/windows
+    return webLocalBaseUrl;
+  }
 
   /// Request timeout
   static const Duration timeout = Duration(seconds: 30);
 
   // Health
-  static const String health = '/';
+  static const String health = '/health';
 
   // Auth Endpoints
   static const String register = '/api/auth/register';

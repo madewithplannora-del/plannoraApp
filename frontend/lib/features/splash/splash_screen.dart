@@ -8,6 +8,8 @@ import '../auth/login_screen.dart';
 import '../auth/role_select_screen.dart';
 import '../customer/customer_nav_screen.dart';
 import '../freelancer/freelancer_nav_screen.dart';
+import '../debug/health_check_screen.dart';
+import '../debug/connection_test.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -157,6 +159,34 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             ),
           ),
         ),
+      ),
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            heroTag: 'health',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HealthCheckScreen()),
+              );
+            },
+            backgroundColor: Colors.orange,
+            tooltip: 'Health Check',
+            child: const Icon(Icons.favorite),
+          ),
+          const SizedBox(height: 12),
+          FloatingActionButton(
+            heroTag: 'connection',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const ConnectionTestScreen()),
+              );
+            },
+            backgroundColor: Colors.deepPurple,
+            tooltip: 'Connection Test',
+            child: const Icon(Icons.bug_report),
+          ),
+        ],
       ),
     );
   }

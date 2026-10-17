@@ -49,6 +49,53 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
     }
   }
 
+  Future<void> _handleRemoveFreelancer(String freelancerId) async {
+    final req = context.read<RequestProvider>();
+    
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Remove Freelancer?'),
+        content: const Text('Are you sure you want to remove this freelancer? They will be placed back on the waitlist.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              _removeFreelancer(freelancerId, req);
+            },
+            child: const Text('Remove', style: TextStyle(color: AppColors.error)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _removeFreelancer(String freelancerId, RequestProvider req) async {
+    final success = await req.removeFreelancerFromAccepted(widget.requestId, freelancerId);
+
+    if (!mounted) return;
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Freelancer removed. Waitlist updated.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else if (req.errorMessage != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(req.errorMessage!),
+          backgroundColor: AppColors.error,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final req = context.watch<RequestProvider>();
@@ -165,6 +212,118 @@ class _EventDetailsScreenState extends State<EventDetailsScreen> {
             ),
           ),
           const SizedBox(height: 24),
+
+          // Accepted Freelancers Section
+          if (event.acceptedFreelancers.isNotEmpty) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryContainer.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: AppColors.secondary.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.people_outline,
+                          color: AppColors.secondary, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Accepted Freelancers (${event.acceptedFreelancers.length})',
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.secondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: event.acceptedFreelancers.length,
+                    itemBuilder: (context, index) {
+                      final freelancer = event.acceptedFreelancers[index];
+                      final freelancerId = freelancer['_id']?.toString() ?? '';
+                      final category =
+                          freelancer['freelancer_category']?.toString() ?? 'N/A';
+                      final phone = freelancer['phone_no']?.toString() ?? 'N/A';
+                      final linkedin =
+                          freelancer['linkedin']?.toString() ?? 'N/A';
+
+                      return Material(
+                        color: Colors.transparent,
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppColors.cardBorder.withValues(alpha: 0.5),
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      category,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.textPrimary,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      phone,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              if (linkedin != 'N/A') ...[
+                                IconButton(
+                                  icon: const Icon(Icons.link,
+                                      color: AppColors.primary, size: 18),
+                                  onPressed: () {
+                                    // Open LinkedIn if needed
+                                  },
+                                  constraints: const BoxConstraints(),
+                                  padding: EdgeInsets.zero,
+                                ),
+                                const SizedBox(width: 4),
+                              ],
+                              IconButton(
+                                icon: const Icon(Icons.close,
+                                    color: AppColors.error, size: 18),
+                                onPressed: () =>
+                                    _handleRemoveFreelancer(freelancerId),
+                                tooltip: 'Remove freelancer',
+                                constraints: const BoxConstraints(),
+                                padding: EdgeInsets.zero,
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+          ],
+
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(

@@ -273,4 +273,58 @@ class RequestProvider extends ChangeNotifier {
       return null;
     }
   }
+
+  Future<bool> removeFreelancerFromAccepted(
+      String requestId, String freelancerId) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      await _api.delete(
+        '${ApiConfig.baseUrl}/api/request/$requestId/freelancer/$freelancerId',
+      );
+      
+      // Remove from current request's accepted list
+      if (_currentRequest != null) {
+        final updated = _currentRequest!.acceptedFreelancers
+            .where((f) => f['_id'] != freelancerId)
+            .toList();
+        _currentRequest = EventRequestModel(
+          id: _currentRequest!.id,
+          customerId: _currentRequest!.customerId,
+          eventDetails: _currentRequest!.eventDetails,
+          pay: _currentRequest!.pay,
+          city: _currentRequest!.city,
+          pincode: _currentRequest!.pincode,
+          state: _currentRequest!.state,
+          location: _currentRequest!.location,
+          category: _currentRequest!.category,
+          time: _currentRequest!.time,
+          startTime: _currentRequest!.startTime,
+          endTime: _currentRequest!.endTime,
+          noOfCandidates: _currentRequest!.noOfCandidates,
+          date: _currentRequest!.date,
+          additionalDescription: _currentRequest!.additionalDescription,
+          completionCode: _currentRequest!.completionCode,
+          createdAt: _currentRequest!.createdAt,
+          acceptedFreelancers: updated,
+        );
+      }
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      _errorMessage = e.message;
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    } catch (e) {
+      _errorMessage = 'Failed to remove freelancer';
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
 }

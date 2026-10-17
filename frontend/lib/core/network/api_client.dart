@@ -216,6 +216,35 @@ class ApiClient {
     }
   }
 
+  Future<dynamic> delete(
+    String path, {
+    bool requiresAuth = true,
+  }) async {
+    try {
+      final uri = _buildUri(path);
+      final headers = await _headers(requiresAuth: requiresAuth);
+      final response = await _client
+          .delete(uri, headers: headers)
+          .timeout(ApiConfig.timeout);
+      return _processResponse(response);
+    } on SocketException {
+      throw ApiException(
+        message: 'Unable to connect to PlanEra server. Please check your internet connection.',
+      );
+    } on TimeoutException {
+      throw ApiException(
+        message: 'Request timed out. The server may be waking up, please try again.',
+      );
+    } on ApiException catch (e) {
+      if (requiresAuth && _isUnauthorized(e)) {
+        await _handleAuthRevoked(_storage);
+      }
+      rethrow;
+    } catch (e) {
+      throw ApiException(message: 'Unexpected network error: $e');
+    }
+  }
+
   Future<dynamic> multipartRequest({
     required String method,
     required String path,
@@ -240,11 +269,16 @@ class ApiClient {
       });
 
       if (fileField != null && filePath != null && filePath.isNotEmpty) {
-        final file = File(filePath);
-        if (await file.exists()) {
-          request.files.add(
-            await http.MultipartFile.fromPath(fileField, filePath),
-          );
+        try {
+          final file = File(filePath);
+          if (await file.exists()) {
+            request.files.add(
+              await http.MultipartFile.fromPath(fileField, filePath),
+            );
+          }
+        } catch (_) {
+          // On web, file paths don't work the same way
+          // File upload will be skipped but request continues
         }
       }
 

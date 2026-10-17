@@ -329,44 +329,47 @@ class _FreelancerProfileScreenState extends State<FreelancerProfileScreen> {
             ),
             const SizedBox(height: 20),
             // Actions
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: AppColors.cardBorder),
-              ),
-              child: Column(
-                children: [
-                  ListTile(
-                    leading:
-                        const Icon(Icons.swap_horiz, color: AppColors.secondary),
-                    title: const Text('Switch to Host / Customer Mode'),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (_) => const RoleSelectScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  const Divider(height: 1),
-                  ListTile(
-                    leading: const Icon(Icons.logout, color: AppColors.error),
-                    title: const Text(
-                      'Sign Out',
-                      style: TextStyle(color: AppColors.error),
+            Material(
+              color: Colors.transparent,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                child: Column(
+                  children: [
+                    ListTile(
+                      leading:
+                          const Icon(Icons.swap_horiz, color: AppColors.secondary),
+                      title: const Text('Switch to Host / Customer Mode'),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () {
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(
+                            builder: (_) => const RoleSelectScreen(),
+                          ),
+                        );
+                      },
                     ),
-                    onTap: () async {
-                      await auth.logout();
-                      if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (route) => false,
-                      );
-                    },
-                  ),
-                ],
+                    const Divider(height: 1),
+                    ListTile(
+                      leading: const Icon(Icons.logout, color: AppColors.error),
+                      title: const Text(
+                        'Sign Out',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                      onTap: () async {
+                        await auth.logout();
+                        if (!context.mounted) return;
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(builder: (_) => const LoginScreen()),
+                          (route) => false,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

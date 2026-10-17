@@ -267,9 +267,19 @@ const getRequestById = async (req, res) => {
             return res.status(404).json({ message: "Request not found" });
         }
 
+        // Get the request progress with populated accepted freelancers
+        const requestProgress = await requestProgressModel.findOne({
+            requestId: req.params.id
+        }).populate({
+            path: "accepted",
+            model: "freelancers",
+            select: "_id freelancer_category linkedin phone_no profile_picture"
+        });
+
         return res.status(200).json({
             message: "Request fetched successfully",
-            request
+            request,
+            acceptedFreelancers: requestProgress?.accepted || []
         });
     } catch (error) {
         console.error("Get request error:", error);

@@ -16,6 +16,7 @@ class EventRequestModel {
   final String additionalDescription;
   final String? completionCode;
   final DateTime? createdAt;
+  final List<Map<String, dynamic>> acceptedFreelancers;
 
   EventRequestModel({
     required this.id,
@@ -35,6 +36,7 @@ class EventRequestModel {
     this.additionalDescription = '',
     this.completionCode,
     this.createdAt,
+    this.acceptedFreelancers = const [],
   });
 
   factory EventRequestModel.fromJson(Map<String, dynamic> json) {
@@ -49,6 +51,16 @@ class EventRequestModel {
 
     final cust = json['customer'];
     final custId = cust is Map ? (cust['_id']?.toString() ?? '') : (cust?.toString() ?? '');
+
+    // Parse accepted freelancers
+    final acceptedList = <Map<String, dynamic>>[];
+    if (json['acceptedFreelancers'] is List) {
+      for (final freelancer in json['acceptedFreelancers'] as List) {
+        if (freelancer is Map) {
+          acceptedList.add(Map<String, dynamic>.from(freelancer));
+        }
+      }
+    }
 
     return EventRequestModel(
       id: json['_id']?.toString() ?? json['id']?.toString() ?? '',
@@ -68,6 +80,7 @@ class EventRequestModel {
       additionalDescription: json['additional_description']?.toString() ?? '',
       completionCode: json['completion_code']?.toString(),
       createdAt: parseDate(json['createdAt']),
+      acceptedFreelancers: acceptedList,
     );
   }
 
@@ -88,6 +101,7 @@ class EventRequestModel {
       'no_of_candidates': noOfCandidates,
       'date': date?.toIso8601String(),
       'additional_description': additionalDescription,
+      'acceptedFreelancers': acceptedFreelancers,
     };
   }
 }

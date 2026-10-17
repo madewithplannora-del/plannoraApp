@@ -15,5 +15,8 @@ void main() async {
     ),
   );
 
+  // Uncomment the line below to test backend connectivity on app start
+  // To access: Click the debug button on splash screen or use: flutter run --dart-define=DEBUG_MODE=true
+  
   runApp(const PlanEraApp());
 }
